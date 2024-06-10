@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow Effect</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .letter {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 300px; /* Увеличили в 3 раза */
+            color: white;
+            font-family: Arial, sans-serif; /* Изменили шрифт */
+        }
+
+        .dot {
+            width: 25px; /* Уменьшили в 2 раза */
+            height: 25px; /* Уменьшили в 2 раза */
+            background-color: white;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            border-radius: 50%;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="letter" id="letter">S</div>
+    <div class="dot" id="dot"></div>
+    <script>
+        const dot = document.getElementById('dot');
+        const letter = document.getElementById('letter');
+
+        function calculateDistance(x1, y1, x2, y2) {
+            return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        }
+
+        function onTouchMove(e) {
+            const touch = e.touches[0];
+            const dotX = touch.clientX;
+            const dotY = touch.clientY;
+
+            // Move the dot
+            dot.style.left = `${dotX - 12.5}px`;
+            dot.style.top = `${dotY - 12.5}px`;
+
+            // Calculate shadow
+            const letterRect = letter.getBoundingClientRect();
+            const letterX = letterRect.left + letterRect.width / 2;
+            const letterY = letterRect.top + letterRect.height / 2;
+
+            const distance = calculateDistance(letterX, letterY, dotX, dotY);
+            const shadowX = (letterX - dotX) / 5;
+            const shadowY = (letterY - dotY) / 5;
+
+            // Calculate blur based on distance and make it 3 times less
+            const blur = Math.min(distance / 30, 50);
+
+            // Apply shadow to the letter (with extended glow effect)
+            letter.style.textShadow = `
+                ${shadowX}px ${shadowY}px ${blur}px rgba(255, 255, 255, 1),
+                ${shadowX * 2}px ${shadowY * 2}px ${blur * 1.5}px rgba(255, 255, 255, 0.8),
+                ${shadowX * 3}px ${shadowY * 3}px ${blur * 2}px rgba(255, 255, 255, 0.6),
+                ${shadowX * 4}px ${shadowY * 4}px ${blur * 2.5}px rgba(255, 255, 255, 0.4),
+                ${shadowX * 5}px ${shadowY * 5}px ${blur * 3}px rgba(255, 255, 255, 0.2)
+            `;
+        }
+
+        dot.addEventListener('touchmove', onTouchMove);
+    </script>
+</body>
+</html>
+н

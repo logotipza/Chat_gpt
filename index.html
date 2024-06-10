@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Grid of Shapes</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 10px);
+            grid-template-rows: repeat(auto-fill, 10px);
+            gap: 30px; /* Уменьшенное расстояние между квадратиками */
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape {
+            background-color: white;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.1s, background-color 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container"></div>
+    <script>
+        const container = document.querySelector('.container');
+        const numShapesX = Math.floor(window.innerWidth / 30);
+        const numShapesY = Math.floor(window.innerHeight / 30);
+        const maxSize = 40; // Увеличенный максимальный размер объекта
+        const minSize = 10; // Минимальный размер объекта
+        const influenceRadius = 200; // Радиус влияния курсора
+
+        for (let y = 0; y < numShapesY; y++) {
+            for (let x = 0; x < numShapesX; x++) {
+                const shape = document.createElement('div');
+                shape.classList.add('shape');
+                container.appendChild(shape);
+            }
+        }
+
+        const shapes = document.querySelectorAll('.shape');
+
+        function handlePointerMove(x, y) {
+            requestAnimationFrame(() => {
+                shapes.forEach(shape => {
+                    const rect = shape.getBoundingClientRect();
+                    const shapeX = rect.left + rect.width / 2;
+                    const shapeY = rect.top + rect.height / 2;
+
+                    const distance = Math.hypot(x - shapeX, y - shapeY);
+                    const influence = Math.max(0, 1 - distance / influenceRadius);
+
+                    const newSize = minSize + (maxSize - minSize) * influence;
+                    shape.style.transform = `scale(${newSize / minSize})`;
+
+                    const colorValue = 255 * (1 - influence);
+                    shape.style.backgroundColor = `rgb(255, ${colorValue}, ${colorValue})`;
+                });
+            });
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            handlePointerMove(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            handlePointerMove(touch.clientX, touch.clientY);
+        });
+    </script>
+</body>
+</html>

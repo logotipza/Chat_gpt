@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лавовая лампа</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="lavaLamp"></canvas>
+
+    <script>
+        const canvas = document.getElementById('lavaLamp');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Blob {
+            constructor() {
+                this.radius = Math.random() * 20 + 10; // Тоньше частицы
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = Math.random() * -2 - 1; // Движение вверх
+                this.color = 'rgba(255, 0, 255, 0.7)'; // Цвет фуксия
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x - this.radius < 0 || this.x + this.radius > width) {
+                    this.vx *= -1;
+                }
+
+                if (this.y + this.radius < 0) {
+                    this.y = height + this.radius; // Перемещение частицы вниз
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(255, 0, 255, 1)'; // Эффект свечения
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        function metaball(ctx, blobs) {
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    let sum = 0;
+                    for (let i = 0; i < blobs.length; i++) {
+                        const dx = x - blobs[i].x;
+                        const dy = y - blobs[i].y;
+                        const radius = blobs[i].radius;
+                        sum += (radius * radius) / (dx * dx + dy * dy);
+                    }
+                    const index = (x + y * width) * 4;
+
+                    if (sum >= 1) {
+                        data[index] = 255; // red
+                        data[index + 1] = 0; // green
+                        data[index + 2] = 255; // blue
+                        data[index + 3] = 255; // alpha
+                    } else {
+                        data[index + 3] = 0;
+                    }
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        const blobs = [];
+        for (let i = 0; i < 50; i++) { // Увеличиваем количество частиц
+            blobs.push(new Blob());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            blobs.forEach(blob => blob.update());
+            metaball(ctx, blobs);
+            blobs.forEach(blob => blob.draw());
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
